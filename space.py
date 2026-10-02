@@ -10,29 +10,43 @@ ship = Actor('player/spaceships/playership1_blue')
 ship.x = 400
 ship.y = 550
 
+gems = []
+
 gem = Actor('items/gemblue')
-gem.x = random.randint(5,WIDTH - 5)
-gem.y = -20
+gems.append(gem)
 
-heart = Actor('hud/hud_heartfull')
-heart.x = 30
-heart.y = 65
-heart.scale = 0.5
+gem = Actor('items/gemgreen')
+gems.append(gem)
 
-heart2 = Actor('hud/hud_heartfull')
-heart2.x = 60
-heart2.y = 65
-heart2.scale = 0.5
+gem = Actor('items/gemred')
+gems.append(gem)
 
-heart3 = Actor('hud/hud_heartfull')
-heart3.x = 90
-heart3.y = 65
-heart3.scale = 0.5
+gem = Actor('items/gemyellow')
+gems.append(gem)
+
+for gem in gems:
+    gem.x = random.randint(5,WIDTH - 5)
+    gem.y = -20
+    gem.velocidade = random.randint(1,3)
+
+
+hearts = []
+heartx = 30
+
+for i in range(3):
+    heart = Actor('hud/hud_heartfull')
+    heart.x = heartx * (i + 1)
+    heart.y = 65
+    heart.scale = 0.5
+    heart.ativo = True
+    hearts.append(heart)
+
 
 score = 0
 level = 0
 combo  = 0
 life = 3
+lastCombo = 0
 
 background = [
     {
@@ -42,7 +56,6 @@ background = [
     for _ in range(100)
 ]
 
-
 def draw():
     screen.clear()
     if gameover:
@@ -51,21 +64,20 @@ def draw():
     else:
         for star in background: 
             screen.draw.filled_circle(star["pos"], star["size"], "white")
-        gem.draw()
+        for gem in gems:
+            gem.draw()
         ship.draw()
-        if life > 0:
-            heart.draw()
-        if life > 1:
-            heart2.draw()
-        if life > 2:
-            heart3.draw()
+        for heart in hearts:
+            if heart.ativo:
+                heart.draw()
+            
         screen.draw.text('Score: ' + str(score), (15,10), color=(255,255,255), fontsize=30)
         screen.draw.text('Level: ' + str(level + 1), (15,30), color=(255,255,255), fontsize=30)
  
 
 
 def update():
-    global score, combo, level, life, gameover
+    global score, combo, level, life, gameover, lastCombo
     #INPUT DE COMANDOS
     if (keyboard.right or keyboard.d) and ship.x < WIDTH - 50:
         ship.x += + 5
@@ -80,26 +92,30 @@ def update():
 
     
     #GEMA PASSA DA TELA
-    if gem.y > HEIGHT + 10:
-        life -= 1
-        if life == 0:
-           gameover = True     
-        combo = 0
-        if level > 0:
-            level -= 1
-        resetGem() 
+    for gem in gems:
+        if gem.y > HEIGHT + 10:
+            life -= 1
+            if life == 0:
+                gameover = True     
+            combo = 0
+            if level > 0:
+                level -= 1
+            hearts[life].ativo = False
+            resetGem(gem) 
 
     #GEMA É COLETADA
-    if gem.colliderect(ship) and not gameover:
-        combo += 1
-        score += 10    
-        resetGem()
+    for gem in gems:
+        if gem.colliderect(ship) and not gameover:
+            combo += 1
+            score += 10    
+            resetGem(gem)
     
-    if combo > 0:
+    if combo % 3 == 0 and combo > 0 and combo > lastCombo:
         level = int(combo / 3)
 
     #VELOCIDADE DE QUEDA DA GEMA
-    gem.y += 5 + level
+    for gem in gems:
+        gem.y += gem.velocidade + level
 
     #ATUALIZA POSIÇÃO DAS ESTRELAS
     for i in range(100):
@@ -109,9 +125,7 @@ def update():
             y = 0
         background[i]["pos"] = (x, y)
         
- 
-def resetGem():
-    global gem
+def resetGem(gem):
     gem.y = -20
     gem.x = random.randint(5,WIDTH - 5)  
 
