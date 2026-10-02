@@ -3,7 +3,7 @@ import pgtrun
 WIDTH = 800  # Largura em Pixels
 HEIGHT = 600  # Altura em pixels
 
-dino = Actor('dino/idle1')
+dino = Actor('idle1')
 dino.x = 0
 dino.y = 50
 dino.anim.add("run", 0.66)
