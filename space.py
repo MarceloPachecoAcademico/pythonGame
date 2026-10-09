@@ -12,22 +12,16 @@ ship.y = 550
 
 gems = []
 
-gem = Actor('items/gemblue')
-gems.append(gem)
+gems_colors = ("blue","green","red", "yellow")
 
-gem = Actor('items/gemgreen')
-gems.append(gem)
-
-gem = Actor('items/gemred')
-gems.append(gem)
-
-gem = Actor('items/gemyellow')
-gems.append(gem)
-
-for gem in gems:
+for i in range(4):
+    gem = Actor('items/gem' + gems_colors[i])
+    gem.id = i
     gem.x = random.randint(5,WIDTH - 5)
     gem.y = -20
     gem.velocidade = random.randint(1,3)
+    gem.ativo = False
+    gems.append(gem)
 
 
 hearts = []
@@ -65,7 +59,11 @@ def draw():
         for star in background: 
             screen.draw.filled_circle(star["pos"], star["size"], "white")
         for gem in gems:
-            gem.draw()
+            if gem.id == 1:
+                gem.ativo = True
+                gem.velocidade = 4
+            if gem.ativo: 
+                gem.draw()
         ship.draw()
         for heart in hearts:
             if heart.ativo:
@@ -93,7 +91,7 @@ def update():
     
     #GEMA PASSA DA TELA
     for gem in gems:
-        if gem.y > HEIGHT + 10:
+        if gem.y > HEIGHT + 10 and gem.ativo:
             life -= 1
             if life == 0:
                 gameover = True     
@@ -105,7 +103,7 @@ def update():
 
     #GEMA É COLETADA
     for gem in gems:
-        if gem.colliderect(ship) and not gameover:
+        if gem.colliderect(ship) and not gameover and gem.ativo:
             combo += 1
             score += 10    
             resetGem(gem)
@@ -120,9 +118,10 @@ def update():
     #ATUALIZA POSIÇÃO DAS ESTRELAS
     for i in range(100):
         x , y = background[i]["pos"]
-        y += 1 + level
+        y += 1 * background[i]["size"] + level
         if y > HEIGHT:
             y = 0
+            x = random.randint(0,WIDTH)
         background[i]["pos"] = (x, y)
         
 def resetGem(gem):
